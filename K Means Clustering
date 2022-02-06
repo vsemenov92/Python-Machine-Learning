@@ -1,0 +1,49 @@
+#Import the Libraries
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+#Get the Data
+df = pd.read_csv('College_Data', index_col=0)
+
+#Explore Through Seaborn
+sns.set_style('whitegrid')
+sns.scatterplot(x='Grad.Rate', y='Room.Board', hue='Private', data=df)
+
+sns.set_style('whitegrid')
+sns.lmplot(y='F.Undergrad', x='Outstate', hue='Private', data=df,palette='coolwarm',size=6,aspect=1,fit_reg=False)
+
+sns.set_style('darkgrid')
+g = sns.FacetGrid(df, hue="Private", palette='coolwarm', size=6, aspect=2)
+g = g.map(plt.hist, 'Outstate', bins=20, alpha=0.7)
+
+sns.set_style('darkgrid')
+g = sns.FacetGrid(df, hue='Private', palette='coolwarm', size=6, aspect=2)
+g = g.map(plt.hist, 'Grad.Rate', bins=20, alpha=0.7)
+
+#Create K Means Cluster
+from sklearn.cluster import KMeans
+
+kmeans = KMeans(n_clusters=2)
+
+kmeans.fit(df.drop('Private', axis=1))
+
+kmeans.cluster_centers_
+
+#Evaluation
+def converter(cluster):
+    if cluster=='Yes':
+        return 1
+    else:
+        return 0
+        
+df['Cluster']=df['Private'].apply(converter)
+
+#Create Confusion Matrix
+from sklearn.metrics import confusion_matrix, classification_report
+
+print(confusion_matrix(df['Cluster'], kmeans.labels_))
+print(classification_report(df["Cluster"], kmeans.labels_))
+
